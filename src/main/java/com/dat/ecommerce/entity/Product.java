@@ -31,6 +31,7 @@ public class Product {
     private ProductStatus status;
 
     @Column(nullable = false)
+    @Version
     private Integer version;
 
     @Column(name = "created_at", nullable = false, updatable = false)
