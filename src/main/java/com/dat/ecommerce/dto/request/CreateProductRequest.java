@@ -24,10 +24,6 @@ public class CreateProductRequest {
     @NotBlank(message = "sku is required")
     private String sku;
 
-    @NotNull(message = "stock is required")
-    @Min(value = 0, message = "stock cannot be negative")
-    private Integer version;
-
     CreateProductRequest() {}
 
     CreateProductRequest(
@@ -35,15 +31,13 @@ public class CreateProductRequest {
             String description,
             BigDecimal price,
             Integer stock,
-            String sku,
-            Integer version
+            String sku
     ) {
         this.name = name;
         this.description = description;
         this.price = price;
         this.stock = stock;
         this.sku = sku;
-        this.version = version;
     }
 
     public String getName() {
@@ -60,10 +54,6 @@ public class CreateProductRequest {
 
     public Integer getStock() {
         return stock;
-    }
-
-    public Integer getVersion() {
-        return version;
     }
 
     public String getSku() {

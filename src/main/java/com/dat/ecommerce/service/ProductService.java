@@ -36,22 +36,21 @@ public class ProductService {
                 request.getPrice(),
                 request.getStock(),
                 request.getSku(),
-                ProductStatus.PENDING,
-                request.getVersion());
+                ProductStatus.PENDING);
 
         Product savedProduct = productRepository.save(product);
 
         return new ProductResponse(savedProduct);
     }
 
-    public List<ProductResponse> getAllProduct() {
+    public List<ProductResponse> getAllProducts() {
         return productRepository.findAll()
                 .stream()
                 .map(ProductResponse::new)
                 .toList();
     }
 
-    public  ProductResponse getProuductById(Long id) {
+    public  ProductResponse getProductById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id));
 
@@ -65,6 +64,7 @@ public class ProductService {
         return new ProductResponse(product);
     }
 
+    @Transactional
     public ProductResponse updateProduct(Long id, UpdateProductRequest request) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id));
@@ -77,7 +77,7 @@ public class ProductService {
         if (request.getSku() != null
                 && !request.getSku().equals(product.getSku())) {
 
-            if(productRepository.existsBySku(request.getSku())) {
+            if(productRepository.existsBySkuAndIdNot(request.getSku(), id)) {
                 throw new SkuAlreadyExistsException(
                         "Sku already exists"
                 );
@@ -101,21 +101,17 @@ public class ProductService {
             product.setPrice(request.getPrice());
         }
 
-        if (request.getVersion() != null
-                && (request.getVersion() > product.getVersion())) {
-            product.setVersion(request.getVersion());
-        }
+        productRepository.saveAndFlush(product);
 
-        Product updateProduct = productRepository.save(product);
-
-        return new ProductResponse(updateProduct);
+        return new ProductResponse(product);
     }
 
+    @Transactional
     public void deleteProductById(Long id) {
-        if (!productRepository.existsById(id)) {
-            throw new ProductNotFoundException("Product not found with id: " + id);
-        }
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(
+                        "Product not found with id: " + id ) );
 
-        productRepository.deleteById(id);
+        productRepository.delete(product);
     }
 }

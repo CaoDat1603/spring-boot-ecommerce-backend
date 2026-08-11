@@ -48,8 +48,7 @@ public class Product {
             BigDecimal price,
             Integer stock,
             String sku,
-            ProductStatus status,
-            Integer version
+            ProductStatus status
     ) {
         this.name = name;
         this.description = description;
@@ -57,8 +56,30 @@ public class Product {
         this.sku = sku;
         this.stock = stock;
         this.status = status;
-        this.version = version;
-        this.createdAt = LocalDateTime.now();
+    }
+
+
+    // Hibernate sẽ xử lý:
+    // INSERT
+    //  ↓
+    // @PrePersist
+    //  ↓
+    // createdAt + updatedAt
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    // Hibernate sẽ xử lý:
+    // UPDATE
+    //  ↓
+    // @PreUpdate
+    //  ↓
+    // updatedAt = thời gian hiện tại
+    @PreUpdate
+    protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 

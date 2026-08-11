@@ -19,9 +19,6 @@ public class UpdateProductRequest {
 
     private String sku;
 
-    @Min(value = 0, message = "stock cannot be negative")
-    private Integer version;
-
     UpdateProductRequest() {}
 
     UpdateProductRequest(
@@ -29,23 +26,17 @@ public class UpdateProductRequest {
             String description,
             BigDecimal price,
             Integer stock,
-            String sku,
-            Integer version
+            String sku
     ) {
         this.name = name;
         this.description = description;
         this.price = price;
         this.stock = stock;
         this.sku = sku;
-        this.version = version;
     }
 
     public String getSku() {
         return sku;
-    }
-
-    public Integer getVersion() {
-        return version;
     }
 
     public String getName() {
@@ -74,10 +65,6 @@ public class UpdateProductRequest {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public void setVersion(Integer version) {
-        this.version = version;
     }
 
     public void setStock(Integer stock) {

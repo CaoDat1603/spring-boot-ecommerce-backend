@@ -17,49 +17,79 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
+
     private final ProductService productService;
 
     public ProductController(ProductService productService) {
         this.productService = productService;
     }
 
-    @PostMapping("/")
-    @PreAuthorize("hasRole('ADMIN')")
-    @ResponseStatus(HttpStatus.CREATED)
-    public ProductResponse createProduct(@Valid @RequestBody CreateProductRequest request) {
-        return productService.createProduct(request);
-    }
 
-    @GetMapping("/")
+    @GetMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public List<ProductResponse> getAllProducts() {
-        return productService.getAllProduct();
+    public ResponseEntity<List<ProductResponse>> getAllProducts() {
+
+        return ResponseEntity.ok(
+                productService.getAllProducts()
+        );
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ProductResponse getProductById(@PathVariable Long id) {
-        return productService.getProuductById(id);
+    public ResponseEntity<ProductResponse> getProductById(
+            @PathVariable Long id
+    ) {
+
+        return ResponseEntity.ok(
+                productService.getProductById(id)
+        );
     }
 
-    @GetMapping("/{sku}")
+    @GetMapping("/sku/{sku}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ProductResponse getProductBySky(@PathVariable String sku) {
-        return productService.getProductBySku(sku);
+    public ResponseEntity<ProductResponse> getProductBySku(
+            @PathVariable String sku
+    ) {
+
+        return ResponseEntity.ok(
+                productService.getProductBySku(sku)
+        );
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ProductResponse> createProduct(
+            @Valid @RequestBody CreateProductRequest request
+    ) {
+
+        ProductResponse response =
+                productService.createProduct(request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ProductResponse updateProduct(
+    public ResponseEntity<ProductResponse> updateProduct(
             @PathVariable Long id,
-            @Valid @RequestBody UpdateProductRequest request) {
-        return productService.updateProduct(id, request);
+            @Valid @RequestBody UpdateProductRequest request
+    ) {
+
+        return ResponseEntity.ok(
+                productService.updateProduct(id, request)
+        );
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteProduct(
+            @PathVariable Long id
+    ) {
+
         productService.deleteProductById(id);
-        return ResponseEntity.ok("User deleted successfully");
+
+        return ResponseEntity.noContent().build();
     }
 }
