@@ -8,6 +8,10 @@ import java.util.Optional;
 
 @Repository
 public interface IdempotencyRecordRepository extends JpaRepository<IdempotencyRecord, Long> {
-    Optional<IdempotencyRecord> findByIdempotencyKeyAndRequestPath(String idempotencyKey, String requestPath);
-    long countByIdempotencyKeyAndRequestPath(String idempotencyKey, String requestPath);
+    Optional<IdempotencyRecord>
+    findByIdempotencyKeyAndUserIdAndEndpoint(
+            String idempotencyKey,
+            Long userId,
+            String endpoint
+    );
 }

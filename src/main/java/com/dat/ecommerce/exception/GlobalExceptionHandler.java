@@ -120,6 +120,23 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
+    @ExceptionHandler(PaymentAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorResponse> handlePaymentAlreadyExistsException(
+            PaymentAlreadyExistsException ex,
+            HttpServletRequest request
+    ) {
+
+        ApiErrorResponse error = createErrorResponse(
+                HttpStatus.CONFLICT,
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(error);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleValidationException(
             MethodArgumentNotValidException ex,

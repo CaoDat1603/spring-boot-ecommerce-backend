@@ -45,7 +45,8 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**",
 
-                                "/api/auth/**"
+                                "/api/auth/**",
+                                "/api/webhooks/stripe"
                         ).permitAll()
 
                         // Các API khác cần JWT

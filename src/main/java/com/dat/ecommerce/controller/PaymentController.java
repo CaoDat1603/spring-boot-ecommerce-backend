@@ -2,7 +2,9 @@ package com.dat.ecommerce.controller;
 
 import com.dat.ecommerce.dto.request.CreatePaymentRequest;
 import com.dat.ecommerce.dto.response.PaymentResponse;
+import com.dat.ecommerce.dto.response.StripeCheckoutResponse;
 import com.dat.ecommerce.service.PaymentService;
+import com.stripe.exception.StripeException;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,18 +26,18 @@ public class PaymentController {
     // CREATE PAYMENT
     // ==========================================
 
-    @PostMapping
-    public ResponseEntity<PaymentResponse> createPayment(
+    @PostMapping("/stripe")
+    public ResponseEntity<StripeCheckoutResponse> createStripePayment(
             Authentication authentication,
-            @RequestBody CreatePaymentRequest request
-    ) {
+            @RequestParam Long orderId
+    ) throws StripeException {
 
         String email = authentication.getName();
 
-        PaymentResponse response =
-                paymentService.createPayment(
+        StripeCheckoutResponse response =
+                paymentService.createStripePayment(
                         email,
-                        request
+                        orderId
                 );
 
         return ResponseEntity

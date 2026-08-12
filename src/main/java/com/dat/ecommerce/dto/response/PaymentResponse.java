@@ -8,20 +8,22 @@ import com.dat.ecommerce.enums.PaymentStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public class PaymentResponse
-{
+public class PaymentResponse {
+
     private Long id;
     private Long orderId;
     private BigDecimal amount;
     private PaymentStatus status;
     private PaymentMethod method;
-    private LocalDateTime paidAt;
     private PaymentProvider provider;
     private String providerPaymentId;
+    private String checkoutUrl;
+    private LocalDateTime paidAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public PaymentResponse() { }
+    public PaymentResponse() {
+    }
 
     public PaymentResponse(Payment payment) {
         this.id = payment.getId();
@@ -29,26 +31,62 @@ public class PaymentResponse
         this.amount = payment.getAmount();
         this.status = payment.getStatus();
         this.method = payment.getMethod();
-        this.paidAt = payment.getPaidAt();
         this.provider = payment.getProvider();
         this.providerPaymentId = payment.getProviderPaymentId();
+        this.paidAt = payment.getPaidAt();
         this.createdAt = payment.getCreatedAt();
         this.updatedAt = payment.getUpdatedAt();
     }
 
-    public Long getId() { return id; }
+    public PaymentResponse(
+            Payment payment,
+            String checkoutUrl
+    ) {
+        this(payment);
+        this.checkoutUrl = checkoutUrl;
+    }
 
-    public Long getOrderId() { return orderId; }
+    public Long getId() {
+        return id;
+    }
 
-    public BigDecimal getAmount() { return amount; }
+    public PaymentMethod getMethod() {
+        return method;
+    }
 
-    public PaymentStatus getStatus() { return status; }
+    public String getProviderPaymentId() {
+        return providerPaymentId;
+    }
 
-    public PaymentMethod getMethod() { return method; }
+    public PaymentProvider getProvider() {
+        return provider;
+    }
 
-    public LocalDateTime getPaidAt() { return paidAt; }
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
 
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public LocalDateTime getPaidAt() {
+        return paidAt;
+    }
+
+    public String getCheckoutUrl() {
+        return checkoutUrl;
+    }
+
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public PaymentStatus getStatus() {
+        return status;
+    }
 }

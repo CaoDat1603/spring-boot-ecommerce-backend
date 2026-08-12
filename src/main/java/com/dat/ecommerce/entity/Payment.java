@@ -63,6 +63,18 @@ public class Payment {
         this.provider = provider;
     }
 
+    public Payment(
+            Order order,
+            BigDecimal amount,
+            PaymentStatus status,
+            PaymentMethod method
+    ) {
+        this.order = order;
+        this.amount = amount;
+        this.status = status;
+        this.method = method;
+    }
+
     @PrePersist
     protected void onCreate() {
         LocalDateTime now = LocalDateTime.now();
