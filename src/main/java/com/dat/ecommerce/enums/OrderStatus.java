@@ -2,7 +2,8 @@ package com.dat.ecommerce.enums;
 
 public enum OrderStatus {
     PENDING,
-    AID,
-    FAILED,
+    CONFIRMED,
+    PROCESSING,
+    COMPLETED,
     CANCELLED
 }

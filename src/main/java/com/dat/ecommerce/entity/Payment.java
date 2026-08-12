@@ -1,6 +1,8 @@
 package com.dat.ecommerce.entity;
 
+import com.dat.ecommerce.enums.OrderStatus;
 import com.dat.ecommerce.enums.PaymentMethod;
+import com.dat.ecommerce.enums.PaymentProvider;
 import com.dat.ecommerce.enums.PaymentStatus;
 import jakarta.persistence.*;
 
@@ -14,8 +16,8 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false, unique = true)
     private Order order;
 
     @Column(nullable = false, precision = 15, scale = 0)
@@ -32,6 +34,13 @@ public class Payment {
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private PaymentProvider provider;
+
+    @Column(name = "provider_payment_id")
+    private String providerPaymentId;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -44,13 +53,25 @@ public class Payment {
             Order order,
             BigDecimal amount,
             PaymentStatus status,
-            PaymentMethod method
+            PaymentMethod method,
+            PaymentProvider provider
     ) {
         this.order = order;
         this.amount = amount;
         this.status = status;
         this.method = method;
-        this.createdAt = LocalDateTime.now();
+        this.provider = provider;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -76,6 +97,14 @@ public class Payment {
 
     public LocalDateTime getPaidAt() {
         return paidAt;
+    }
+
+    public PaymentProvider getProvider() {
+        return provider;
+    }
+
+    public String getProviderPaymentId() {
+        return providerPaymentId;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -108,6 +137,14 @@ public class Payment {
 
     public void setPaidAt(LocalDateTime paidAt) {
         this.paidAt = paidAt;
+    }
+
+    public void setProvider(PaymentProvider provider) {
+        this.provider = provider;
+    }
+
+    public void setProviderPaymentId(String providerPaymentId) {
+        this.providerPaymentId = providerPaymentId;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {

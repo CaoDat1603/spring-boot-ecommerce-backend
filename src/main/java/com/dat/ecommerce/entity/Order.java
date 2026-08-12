@@ -32,15 +32,21 @@ public class Order {
 
     public Order() {}
 
-    public Order(
-            User user,
-            BigDecimal totalAmount,
-            OrderStatus status
-    ) {
+    public Order(User user) {
         this.user = user;
-        this.totalAmount = totalAmount;
-        this.status = status;
-        this.createdAt = LocalDateTime.now();
+        this.status = OrderStatus.PENDING;
+        this.totalAmount = BigDecimal.ZERO;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 

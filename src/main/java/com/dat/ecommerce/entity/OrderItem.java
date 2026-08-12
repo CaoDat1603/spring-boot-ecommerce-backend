@@ -39,21 +39,31 @@ public class OrderItem {
     private LocalDateTime updatedAt;
 
     public OrderItem() {}
+
     public OrderItem(
             Order order,
             Product product,
-            String productName,
-            BigDecimal priceProduct,
-            Integer quantity,
-            BigDecimal subtotal
+            Integer quantity
     ) {
         this.order = order;
         this.product = product;
-        this.productName = productName;
-        this.priceProduct = priceProduct;
+        this.productName = product.getName();
+        this.priceProduct = product.getPrice();
         this.quantity = quantity;
-        this.subtotal = subtotal;
-        this.createdAt = LocalDateTime.now();
+
+        this.subtotal = product.getPrice()
+                .multiply(BigDecimal.valueOf(quantity));
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -73,7 +83,7 @@ public class OrderItem {
         return productName;
     }
 
-    public BigDecimal getPriceProduct() {
+    public BigDecimal getProductPrice() {
         return priceProduct;
     }
 
@@ -109,7 +119,7 @@ public class OrderItem {
         this.productName = productName;
     }
 
-    public void setPriceProduct(BigDecimal priceProduct) {
+    public void setProductPrice(BigDecimal priceProduct) {
         this.priceProduct = priceProduct;
     }
 
