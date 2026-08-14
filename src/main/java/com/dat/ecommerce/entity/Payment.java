@@ -41,6 +41,9 @@ public class Payment {
     @Column(name = "provider_payment_id")
     private String providerPaymentId;
 
+    @Column(name = "provider_session_id", unique = true)
+    private String providerSessionId;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -119,6 +122,10 @@ public class Payment {
         return providerPaymentId;
     }
 
+    public String getProviderSessionId() {
+        return providerSessionId;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -157,6 +164,10 @@ public class Payment {
 
     public void setProviderPaymentId(String providerPaymentId) {
         this.providerPaymentId = providerPaymentId;
+    }
+
+    public void setProviderSessionId(String providerSessionId) {
+        this.providerSessionId = providerSessionId;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {

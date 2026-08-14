@@ -10,10 +10,13 @@ import com.dat.ecommerce.repository.PaymentRepository;
 import com.stripe.StripeClient;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
+import com.stripe.net.RequestOptions;
 import com.stripe.param.checkout.SessionCreateParams;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 public class StripePaymentService {
@@ -38,7 +41,8 @@ public class StripePaymentService {
 
     @Transactional
     public StripeCheckoutResponse createCheckoutSession(
-            Order order
+            Order order,
+            String idempotencyKey
     ) throws StripeException {
 
         Payment payment = new Payment(
@@ -104,17 +108,26 @@ public class StripePaymentService {
 
                         .build();
 
-
         Session session =
-                stripeClient.checkout().sessions().create(params);
+                stripeClient
+                        .checkout()
+                        .sessions()
+                        .create(
+                                params,
+                                RequestOptions.builder()
+                                        .setIdempotencyKey(
+                                                idempotencyKey
+                                        )
+                                        .build()
+                        );
 
 
-        savedPayment.setProviderPaymentId(
+        savedPayment.setProviderSessionId(
                 session.getId()
         );
 
         savedPayment.setUpdatedAt(
-                java.time.LocalDateTime.now()
+                LocalDateTime.now()
         );
 
         paymentRepository.save(savedPayment);

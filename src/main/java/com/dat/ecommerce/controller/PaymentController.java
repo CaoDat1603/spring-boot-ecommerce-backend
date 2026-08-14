@@ -8,8 +8,13 @@ import com.stripe.exception.StripeException;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.nio.file.AccessDeniedException;
 
 @SecurityRequirement(name = "bearerAuth")
 @RestController
@@ -29,6 +34,8 @@ public class PaymentController {
     @PostMapping("/stripe")
     public ResponseEntity<StripeCheckoutResponse> createStripePayment(
             Authentication authentication,
+            @RequestHeader("Idempotency-Key")
+            String idempotencyKey,
             @RequestParam Long orderId
     ) throws StripeException {
 
@@ -37,12 +44,29 @@ public class PaymentController {
         StripeCheckoutResponse response =
                 paymentService.createStripePayment(
                         email,
-                        orderId
+                        orderId,
+                        idempotencyKey
                 );
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
+    }
+
+    @PostMapping("/{paymentId}/refund")
+    public ResponseEntity<PaymentResponse> refundPayment(
+            Authentication authentication,
+            @PathVariable Long paymentId
+    ) throws StripeException, AccessDeniedException {
+        String email = authentication.getName();
+
+        PaymentResponse response =
+                paymentService.refundPayment(
+                        email,
+                        paymentId
+                );
+
+        return ResponseEntity.ok(response);
     }
 
     // ==========================================

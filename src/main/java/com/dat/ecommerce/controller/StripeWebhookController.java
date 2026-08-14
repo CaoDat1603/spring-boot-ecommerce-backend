@@ -2,6 +2,7 @@ package com.dat.ecommerce.controller;
 
 import com.dat.ecommerce.service.StripeWebhookService;
 import com.stripe.exception.SignatureVerificationException;
+import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
 import com.stripe.net.Webhook;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,41 +10,29 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/webhooks/stripe")
+@RequestMapping("/api/webhooks")
 public class StripeWebhookController {
 
     private final StripeWebhookService stripeWebhookService;
 
-    @Value("${stripe.webhook-secret}")
-    private String webhookSecret;
-
     public StripeWebhookController(
             StripeWebhookService stripeWebhookService
     ) {
-        this.stripeWebhookService = stripeWebhookService;
+        this.stripeWebhookService =
+                stripeWebhookService;
     }
 
-    @PostMapping
-    public ResponseEntity<Void> handleWebhook(
+    @PostMapping("/stripe")
+    public ResponseEntity<Void> handleStripeWebhook(
             @RequestBody String payload,
-            @RequestHeader("Stripe-Signature") String signature
-    ) {
+            @RequestHeader("Stripe-Signature")
+            String signature
+    ) throws StripeException {
 
-
-        final Event event;
-
-        try {
-            event = Webhook.constructEvent(
-                    payload,
-                    signature,
-                    webhookSecret
-            );
-        } catch (SignatureVerificationException e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().build();
-        }
-
-        stripeWebhookService.handleEvent(event);
+        stripeWebhookService.handleWebhook(
+                payload,
+                signature
+        );
 
         return ResponseEntity.ok().build();
     }

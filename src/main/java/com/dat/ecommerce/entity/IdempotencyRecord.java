@@ -1,5 +1,6 @@
 package com.dat.ecommerce.entity;
 
+import com.dat.ecommerce.enums.IdempotencyStatus;
 import jakarta.persistence.*;
 
 import javax.print.attribute.standard.MediaSize;
@@ -64,6 +65,10 @@ public class IdempotencyRecord {
     )
     private LocalDateTime createdAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private IdempotencyStatus status;
+
     public IdempotencyRecord() {
     }
 
@@ -75,11 +80,16 @@ public class IdempotencyRecord {
         this.idempotencyKey = idempotencyKey;
         this.user = user;
         this.endpoint = endpoint;
+        this.status = IdempotencyStatus.PROCESSING;
         this.createdAt = LocalDateTime.now();
     }
 
     public Long getId() {
         return id;
+    }
+
+    public IdempotencyStatus getStatus() {
+        return status;
     }
 
     public String getIdempotencyKey() {
@@ -116,6 +126,10 @@ public class IdempotencyRecord {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public void setStatus(IdempotencyStatus status) {
+        this.status = status;
     }
 
     public void setEndpoint(String endpoint) {

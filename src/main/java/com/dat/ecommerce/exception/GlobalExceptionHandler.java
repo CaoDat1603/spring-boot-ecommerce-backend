@@ -245,6 +245,38 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(IdempotencyInProgressException.class)
+    public ResponseEntity<ApiErrorResponse> handleIdempotencyInProgress(
+            IdempotencyInProgressException ex,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(createErrorResponse(
+                        HttpStatus.CONFLICT,
+                        ex.getMessage(),
+                        request.getRequestURI()
+                ));
+    }
+
+    @ExceptionHandler(IdempotencyRequestFailedException.class)
+    public ResponseEntity<ApiErrorResponse> handleIdempotencyRequestFailed(
+            IdempotencyRequestFailedException ex,
+            HttpServletRequest request
+    ) {
+
+        HttpStatus status = HttpStatus.valueOf(ex.getStatus());
+
+        return ResponseEntity
+                .status(status)
+                .body(createErrorResponse(
+                        status,
+                        ex.getMessage(),
+                        request.getRequestURI()
+                ));
+    }
+
+
     private ApiErrorResponse createErrorResponse(
             HttpStatus status,
             String message,
