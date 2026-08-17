@@ -4,22 +4,34 @@ import com.dat.ecommerce.dto.request.CreateProductRequest;
 import com.dat.ecommerce.dto.request.UpdateProductRequest;
 import com.dat.ecommerce.dto.response.ProductResponse;
 import com.dat.ecommerce.entity.Product;
+import com.dat.ecommerce.entity.User;
 import com.dat.ecommerce.enums.ProductStatus;
+import com.dat.ecommerce.enums.Role;
 import com.dat.ecommerce.exception.ProductNotFoundException;
 import com.dat.ecommerce.exception.SkuAlreadyExistsException;
+import com.dat.ecommerce.exception.UserNotFoundException;
 import com.dat.ecommerce.repository.ProductRepository;
-import jakarta.transaction.Transactional;
+import com.dat.ecommerce.repository.UserRepository;
+import com.dat.ecommerce.specification.ProductSpecification;
+import org.springframework.data.jpa.domain.PredicateSpecification;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
 @Service
 public class ProductService {
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
 
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, UserRepository userRepository) {
         this.productRepository = productRepository;
+        this.userRepository = userRepository;
     }
 
     @Transactional
@@ -62,6 +74,99 @@ public class ProductService {
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with sku: " + sku));
 
         return new ProductResponse(product);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductResponse> getProducts(
+            String email,
+            String name,
+            String sku,
+            ProductStatus status,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            Integer minStock,
+            Pageable pageable
+    ) {
+        User user = userRepository
+                .findByEmail(email)
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                "User not found"
+                        )
+                );
+
+        Specification<Product> specification =
+                (root, query, cb) -> null;
+
+        if (user.getRole() == Role.USER) {
+            specification =
+                    specification.and(
+                            ProductSpecification.hasStatus(
+                                    ProductStatus.ACTIVE)
+                    );
+
+        } else {
+
+            if (status != null) {
+                specification =
+                        specification.and(
+                                ProductSpecification.hasStatus(
+                                        status)
+                        );
+            }
+        }
+
+        if (name != null && !name.isBlank()) {
+            specification =
+                    specification.and(
+                            ProductSpecification.nameContains(
+                                    name)
+                    );
+        }
+
+        if (sku != null && !sku.isBlank()) {
+
+            specification =
+                    specification.and(
+                            ProductSpecification.skuContains(
+                                    sku)
+                    );
+        }
+
+        if (minPrice != null) {
+
+            specification =
+                    specification.and(
+                            ProductSpecification
+                                    .priceGreaterThanOrEqual(
+                                            minPrice)
+                    );
+        }
+
+        if (maxPrice != null) {
+            specification =
+                    specification.and(
+                            ProductSpecification
+                                    .priceLessThanOrEqual(
+                                            maxPrice)
+                    );
+        }
+
+        if (minStock != null) {
+            specification =
+                    specification.and(
+                            ProductSpecification
+                                    .stockGreaterThanOrEqual(
+                                            minStock)
+                    );
+        }
+
+        return productRepository
+                .findAll(
+                        specification,
+                        pageable
+                )
+                .map(ProductResponse::new);
     }
 
     @Transactional

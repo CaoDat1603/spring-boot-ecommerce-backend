@@ -4,6 +4,7 @@ import com.dat.ecommerce.dto.request.LoginRequest;
 import com.dat.ecommerce.dto.request.RegisterRequest;
 import com.dat.ecommerce.dto.response.AuthResponse;
 import com.dat.ecommerce.dto.response.UserResponse;
+import com.dat.ecommerce.entity.RefreshToken;
 import com.dat.ecommerce.entity.User;
 import com.dat.ecommerce.enums.Role;
 import com.dat.ecommerce.exception.EmailAlreadyExistsException;
@@ -21,11 +22,13 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
-    public AuthService(UserRepository repository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public AuthService(UserRepository repository, PasswordEncoder passwordEncoder, JwtService jwtService, RefreshTokenService refreshTokenService) {
         this.userRepository = repository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     // Transactional đảm bảo:
@@ -52,7 +55,7 @@ public class AuthService {
         return new UserResponse(savedUser);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthResponse login(LoginRequest request) {
 
         User user = userRepository
@@ -75,13 +78,60 @@ public class AuthService {
         String accessToken =
                 jwtService.generateAccessToken(user);
 
-        String refreshToken =
-                jwtService.generateRefreshToken(user);
+        RefreshToken refreshToken =
+                refreshTokenService.createRefreshToken(user);
 
         return new AuthResponse(
                 accessToken,
-                refreshToken,
+                refreshToken.getToken(),
                 "Bearer"
+        );
+    }
+
+    @Transactional
+    public AuthResponse refreshAccessToken(
+            String refreshTokenValue
+    ) {
+
+        RefreshToken oldRefreshToken =
+                refreshTokenService.findByToken(
+                        refreshTokenValue
+                );
+
+        refreshTokenService.verifyExpiration(
+                oldRefreshToken
+        );
+
+        User user = oldRefreshToken.getUser();
+
+        refreshTokenService.revokeToken(
+                oldRefreshToken
+        );
+
+        String newAccessToken = jwtService.generateAccessToken(user);
+
+        RefreshToken newRefreshToken =
+                refreshTokenService.createRefreshToken(
+                        user
+                );
+
+        return new AuthResponse(
+                newAccessToken,
+                newRefreshToken.getToken(),
+                "Bearer"
+        );
+    }
+
+    @Transactional
+    public void logout(String refreshTokenValue) {
+
+        RefreshToken refreshToken =
+                refreshTokenService.findByToken(
+                        refreshTokenValue
+                );
+
+        refreshTokenService.revokeToken(
+                refreshToken
         );
     }
 }

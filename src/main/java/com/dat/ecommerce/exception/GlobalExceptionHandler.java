@@ -199,6 +199,23 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
+    @ExceptionHandler(PaymentNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handlePaymentNotFound(
+            PaymentNotFoundException ex,
+            HttpServletRequest request
+    ) {
+
+        ApiErrorResponse error = createErrorResponse(
+                HttpStatus.NOT_FOUND,
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(error);
+    }
+
     @ExceptionHandler(EmptyCartException.class)
     public ResponseEntity<ApiErrorResponse> handleEmptyCart(
             EmptyCartException ex,

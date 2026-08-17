@@ -3,6 +3,7 @@ package com.dat.ecommerce.service;
 import com.stripe.StripeClient;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Refund;
+import com.stripe.net.RequestOptions;
 import com.stripe.param.RefundCreateParams;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +19,8 @@ public class StripeRefundService {
     }
 
     public Refund createRefund(
-            String paymentIntentId
+            String paymentIntentId,
+            String idempotencyKey
     ) throws StripeException {
 
         RefundCreateParams params =
@@ -28,8 +30,19 @@ public class StripeRefundService {
                         )
                         .build();
 
+        RequestOptions requestOptions =
+                RequestOptions.builder()
+                        .setIdempotencyKey(
+                                idempotencyKey
+                        )
+                        .build();
+
+
+
         return stripeClient
                 .refunds()
-                .create(params);
+                .create(params,
+                        requestOptions
+                );
     }
 }

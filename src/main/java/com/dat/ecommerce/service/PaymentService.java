@@ -160,51 +160,158 @@ public class PaymentService {
     @Transactional
     public PaymentResponse refundPayment(
             String email,
-            Long paymentId
+            Long paymentId,
+            String idempotencyKey
     ) throws StripeException, AccessDeniedException {
-        Payment payment =
-                paymentRepository
-                        .findById(paymentId)
+
+        User user =
+                userRepository
+                        .findByEmail(email)
                         .orElseThrow(() ->
-                                new IllegalStateException(
-                                        "Payment not found"
+                                new UserNotFoundException(
+                                        "User not found"
                                 )
                         );
 
-        Order order = payment.getOrder();
-
-        if (!order.getUser()
-                .getEmail()
-                .equals(email)) {
-
-            throw new AccessDeniedException(
-                    "You do not have permission to refund this payment"
-            );
-        }
-
-        if (payment.getStatus()
-                != PaymentStatus.PAID) {
-
-            throw new IllegalStateException(
-                    "Only PAID payment can be refunded"
-            );
-        }
-
-        if (payment.getProviderPaymentId() == null) {
-            throw new IllegalStateException(
-                    "Stripe PaymentIntent ID is missing"
-            );
-        }
+        String endpoint =
+                "/api/payments/"
+                        + paymentId
+                        + "/refund";
 
         /*
-         * 5. Gọi Stripe Refund API
+         * Claim Idempotency-Key
          */
-        stripeRefundService.createRefund(payment.getProviderPaymentId());
+        IdempotencyClaim claim =
+                idempotencyService.claim(
+                        idempotencyKey,
+                        user,
+                        endpoint
+                );
 
-        payment.setStatus(PaymentStatus.REFUNDED);
-        Payment savedPayment = paymentRepository.save(payment);
+        IdempotencyRecord record =
+                claim.record();
 
-        return new PaymentResponse(savedPayment);
+        /*
+         * Request duplicate
+         */
+        if (!claim.owner()) {
+
+            if (record.getStatus()
+                    == IdempotencyStatus.COMPLETED) {
+
+                return deserializePaymentResponse(
+                        record.getResponseBody()
+                );
+            }
+
+            if (record.getStatus()
+                    == IdempotencyStatus.FAILED) {
+
+                throw new IdempotencyRequestFailedException(
+                        record.getResponseStatus(),
+                        record.getResponseBody()
+                );
+            }
+
+            throw new IdempotencyInProgressException(
+                    "Request with this Idempotency-Key is currently being processed"
+            );
+        }
+
+        try {
+            Payment payment =
+                    paymentRepository
+                            .findById(paymentId)
+                            .orElseThrow(() ->
+                                    new PaymentNotFoundException(
+                                            "Payment not found"
+                                    )
+                            );
+
+            Order order = payment.getOrder();
+
+            if (!order.getUser()
+                    .getEmail().equals(email)) {
+
+                throw new AccessDeniedException(
+                        "You do not have permission to refund this payment"
+                );
+            }
+
+            if (payment.getStatus() != PaymentStatus.PAID) {
+
+                throw new IllegalStateException(
+                        "Only PAID payment can be refunded"
+                );
+            }
+
+            if (payment.getProviderPaymentId() == null) {
+
+                throw new IllegalStateException(
+                        "Stripe PaymentIntent ID is missing"
+                );
+            }
+
+            /*
+             * Gọi Stripe.
+             * Cùng Idempotency-Key được gửi xuống Stripe.
+             */
+            stripeRefundService.createRefund(
+                    payment.getProviderPaymentId(),
+                    idempotencyKey
+            );
+
+            /*
+             * Stripe refund thành công.
+             */
+            payment.setStatus(PaymentStatus.REFUNDED);
+
+            Payment savedPayment = paymentRepository.save(payment);
+
+            PaymentResponse response = new PaymentResponse(savedPayment);
+
+            /*
+             * Lưu kết quả vào IdempotencyRecord.
+             */
+            String responseBody =
+                    serializePaymentResponse(
+                            response
+                    );
+
+            idempotencyService.complete(
+                    record,
+                    HttpStatus.OK.value(),
+                    responseBody
+            );
+
+            return response;
+
+        } catch (PaymentNotFoundException e) {
+
+            idempotencyService.fail(
+                    record,
+                    HttpStatus.NOT_FOUND.value(),
+                    e.getMessage()
+            );
+            throw e;
+
+        } catch (AccessDeniedException e) {
+            idempotencyService.fail(
+                    record,
+                    HttpStatus.FORBIDDEN.value(),
+                    e.getMessage()
+            );
+            throw e;
+
+        } catch (IllegalStateException e) {
+
+            idempotencyService.fail(
+                    record,
+                    HttpStatus.CONFLICT.value(),
+                    e.getMessage()
+            );
+            throw e;
+        }
     }
 
     @Transactional
@@ -215,7 +322,7 @@ public class PaymentService {
         Payment payment = paymentRepository
                 .findById(paymentId)
                 .orElseThrow(() ->
-                        new IllegalStateException(
+                        new PaymentNotFoundException(
                                 "Payment not found with id: " + paymentId
                         )
                 );
@@ -275,7 +382,7 @@ public class PaymentService {
         Payment payment = paymentRepository
                 .findByOrderId(order.getId())
                 .orElseThrow(() ->
-                        new IllegalStateException(
+                        new PaymentNotFoundException(
                                 "Payment not found"
                         )
                 );
@@ -301,7 +408,7 @@ public class PaymentService {
         } catch (JsonProcessingException e) {
 
             throw new IllegalStateException(
-                    "Failed to serialize payment response",
+                    "Failed to serialize payment response: " + e.getMessage(),
                     e
             );
         }
@@ -310,9 +417,7 @@ public class PaymentService {
     private StripeCheckoutResponse deserializeResponse(
             String responseBody
     ) {
-
         try {
-
             return objectMapper.readValue(
                     responseBody,
                     StripeCheckoutResponse.class
@@ -321,7 +426,38 @@ public class PaymentService {
         } catch (JsonProcessingException e) {
 
             throw new IllegalStateException(
-                    "Failed to deserialize payment response",
+                    "Failed to deserialize payment response: " + e.getMessage(),
+                    e
+            );
+        }
+    }
+
+    private String serializePaymentResponse(
+            PaymentResponse response
+    ) {
+        try {
+            return objectMapper.writeValueAsString(
+                    response
+            );
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(
+                    "Failed to serialize payment response: " + e.getMessage(),
+                    e
+            );
+        }
+    }
+
+    private PaymentResponse deserializePaymentResponse(
+            String responseBody
+    ) {
+        try {
+            return objectMapper.readValue(
+                    responseBody,
+                    PaymentResponse.class
+            );
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(
+                    "Failed to deserialize payment response: " + e.getMessage(),
                     e
             );
         }

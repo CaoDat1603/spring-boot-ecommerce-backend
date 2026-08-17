@@ -3,14 +3,23 @@ package com.dat.ecommerce.controller;
 import com.dat.ecommerce.dto.request.CreateProductRequest;
 import com.dat.ecommerce.dto.request.UpdateProductRequest;
 import com.dat.ecommerce.dto.response.ProductResponse;
+import com.dat.ecommerce.enums.ProductStatus;
 import com.dat.ecommerce.service.ProductService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @SecurityRequirement(name = "bearerAuth")
@@ -25,12 +34,59 @@ public class ProductController {
     }
 
 
-    @GetMapping
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @GetMapping("/all")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<List<ProductResponse>> getAllProducts() {
 
         return ResponseEntity.ok(
                 productService.getAllProducts()
+        );
+    }
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<Page<ProductResponse>> getProducts(
+
+            @AuthenticationPrincipal UserDetails userDetails,
+
+            @RequestParam(required = false)
+            String name,
+
+            @RequestParam(required = false)
+            String sku,
+
+            @RequestParam(required = false)
+            ProductStatus status,
+
+            @RequestParam(required = false)
+            BigDecimal minPrice,
+
+            @RequestParam(required = false)
+            BigDecimal maxPrice,
+
+            @RequestParam(required = false)
+            Integer minStock,
+
+            @ParameterObject
+            @PageableDefault(
+                    size = 10,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            )
+            Pageable pageable
+    ) {
+
+        return ResponseEntity.ok(
+                productService.getProducts(
+                        userDetails.getUsername(),
+                        name,
+                        sku,
+                        status,
+                        minPrice,
+                        maxPrice,
+                        minStock,
+                        pageable
+                )
         );
     }
 

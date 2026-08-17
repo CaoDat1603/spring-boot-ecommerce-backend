@@ -56,14 +56,17 @@ public class PaymentController {
     @PostMapping("/{paymentId}/refund")
     public ResponseEntity<PaymentResponse> refundPayment(
             Authentication authentication,
-            @PathVariable Long paymentId
+            @PathVariable Long paymentId,
+            @RequestHeader("Idempotency-Key")
+            String idempotencyKey
     ) throws StripeException, AccessDeniedException {
         String email = authentication.getName();
 
         PaymentResponse response =
                 paymentService.refundPayment(
                         email,
-                        paymentId
+                        paymentId,
+                        idempotencyKey
                 );
 
         return ResponseEntity.ok(response);
