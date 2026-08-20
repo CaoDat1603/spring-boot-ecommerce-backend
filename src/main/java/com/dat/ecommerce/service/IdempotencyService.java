@@ -75,7 +75,6 @@ public class IdempotencyService {
              * PostgreSQL UNIQUE constraint
              * đã chặn request này.
              */
-
             IdempotencyRecord record =
                     repository
                             .findByIdempotencyKeyAndUserIdAndEndpoint(

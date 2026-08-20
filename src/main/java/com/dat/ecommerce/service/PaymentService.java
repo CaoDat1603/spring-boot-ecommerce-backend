@@ -1,28 +1,29 @@
 package com.dat.ecommerce.service;
 
-import com.dat.ecommerce.dto.request.CreatePaymentRequest;
+import com.dat.ecommerce.dto.request.PaymentFilterRequest;
 import com.dat.ecommerce.dto.response.PaymentResponse;
 import com.dat.ecommerce.dto.response.StripeCheckoutResponse;
 import com.dat.ecommerce.entity.*;
 import com.dat.ecommerce.enums.IdempotencyStatus;
-import com.dat.ecommerce.enums.OrderStatus;
 import com.dat.ecommerce.enums.PaymentStatus;
+import com.dat.ecommerce.enums.Role;
 import com.dat.ecommerce.exception.*;
 import com.dat.ecommerce.repository.OrderRepository;
 import com.dat.ecommerce.repository.PaymentRepository;
 import com.dat.ecommerce.repository.UserRepository;
+import com.dat.ecommerce.specification.PaymentSpecification;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.stripe.StripeClient;
 import com.stripe.exception.StripeException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class PaymentService {
@@ -164,8 +165,7 @@ public class PaymentService {
             String idempotencyKey
     ) throws StripeException, AccessDeniedException {
 
-        User user =
-                userRepository
+        User user = userRepository
                         .findByEmail(email)
                         .orElseThrow(() ->
                                 new UserNotFoundException(
@@ -314,82 +314,6 @@ public class PaymentService {
         }
     }
 
-    @Transactional
-    public PaymentResponse confirmPayment(
-            String email,
-            Long paymentId
-    ) {
-        Payment payment = paymentRepository
-                .findById(paymentId)
-                .orElseThrow(() ->
-                        new PaymentNotFoundException(
-                                "Payment not found with id: " + paymentId
-                        )
-                );
-
-        Order order = payment.getOrder();
-
-        if (!order.getUser().getEmail().equals(email)) {
-            throw new IllegalStateException(
-                    "You do not have permission to confirm this payment"
-            );
-        }
-
-        if (payment.getStatus() == PaymentStatus.PAID) {
-            return new PaymentResponse(payment);
-        }
-
-        if (payment.getStatus() != PaymentStatus.PENDING) {
-            throw new IllegalStateException(
-                    "Payment cannot be confirmed"
-            );
-        }
-
-        payment.setStatus(PaymentStatus.PAID);
-        payment.setPaidAt(LocalDateTime.now());
-
-        order.setStatus(OrderStatus.COMPLETED);
-
-        orderRepository.save(order);
-
-        Payment savePayment = paymentRepository.save(payment);
-
-        return new PaymentResponse(savePayment);
-    }
-
-    public List<PaymentResponse> getAlPayment() {
-        return paymentRepository.findAll()
-                .stream()
-                .map(PaymentResponse::new)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public PaymentResponse getPaymentByOrderId(
-            String email,
-            Long orderId
-    ) {
-        Order order = orderRepository
-                .findByIdAndUserId(
-                        orderId,
-                        getUserIdByEmail(email)
-                ).orElseThrow(() ->
-                        new UserNotFoundException(
-                                "Order not found with id: " + orderId
-                        )
-                );
-
-        Payment payment = paymentRepository
-                .findByOrderId(order.getId())
-                .orElseThrow(() ->
-                        new PaymentNotFoundException(
-                                "Payment not found"
-                        )
-                );
-
-        return new PaymentResponse(payment);
-    }
-
     private Long getUserIdByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() ->
@@ -461,5 +385,146 @@ public class PaymentService {
                     e
             );
         }
+    }
+
+
+
+
+    public Page<PaymentResponse> getPayments(
+            String email,
+            PaymentFilterRequest filter,
+            Pageable pageable
+    ) {
+        User user = userRepository
+                .findByEmail(email)
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                "User not found"
+                        )
+                );
+
+        Specification<Payment> specification =
+                (root, query, cb) -> null;
+
+        if (user.getRole() == Role.USER) {
+            specification = specification.and(
+                    PaymentSpecification.hasUserId(
+                            user.getId()
+                    )
+            );
+        }
+
+        if (filter.getPaymentStatus() != null) {
+
+            specification = specification.and(
+                    PaymentSpecification.hasStatus(
+                            filter.getPaymentStatus()
+                    )
+            );
+        }
+
+        if (filter.getPaymentMethod() != null) {
+
+            specification = specification.and(
+                    PaymentSpecification.hasMethod(
+                            filter.getPaymentMethod()
+                    )
+            );
+        }
+
+        if (filter.getMinAmount() != null) {
+
+            specification = specification.and(
+                    PaymentSpecification.AmountGreaterThanOrEqual(
+                            filter.getMinAmount()
+                    )
+            );
+        }
+
+        if (filter.getMaxAmount() != null) {
+
+            specification = specification.and(
+                    PaymentSpecification.AmountLessThanOrEqual(
+                            filter.getMaxAmount()
+                    )
+            );
+        }
+
+        if (filter.getCreatedFrom() != null) {
+
+            specification = specification.and(
+                    PaymentSpecification.createdAtGreaterThanOrEqual(
+                            filter.getCreatedFrom()
+                    )
+            );
+        }
+
+        if (filter.getCreatedTo() != null) {
+
+            specification = specification.and(
+                    PaymentSpecification.createdAtLessThanOrEqual(
+                            filter.getCreatedTo()
+                    )
+            );
+        }
+
+        if (filter.getPaidFrom() != null) {
+
+            specification = specification.and(
+                    PaymentSpecification.paidAtGreaterThanOrEqual(
+                            filter.getPaidFrom()
+                    )
+            );
+        }
+
+        if (filter.getPaidTo() != null) {
+
+            specification = specification.and(
+                    PaymentSpecification.paidAtLessThanOrEqual(
+                            filter.getPaidTo()
+                    )
+            );
+        }
+
+        Page<Payment> payments =
+                paymentRepository.findAll(
+                specification,
+                pageable
+        );
+
+        return payments.map(PaymentResponse::new);
+    }
+
+    public List<PaymentResponse> getAlPayment() {
+        return paymentRepository.findAll()
+                .stream()
+                .map(PaymentResponse::new)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PaymentResponse getPaymentByOrderId(
+            String email,
+            Long orderId
+    ) {
+        Order order = orderRepository
+                .findByIdAndUserId(
+                        orderId,
+                        getUserIdByEmail(email)
+                ).orElseThrow(() ->
+                        new UserNotFoundException(
+                                "Order not found with id: " + orderId
+                        )
+                );
+
+        Payment payment = paymentRepository
+                .findByOrderId(order.getId())
+                .orElseThrow(() ->
+                        new PaymentNotFoundException(
+                                "Payment not found"
+                        )
+                );
+
+        return new PaymentResponse(payment);
     }
 }

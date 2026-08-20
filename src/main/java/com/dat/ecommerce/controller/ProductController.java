@@ -1,6 +1,7 @@
 package com.dat.ecommerce.controller;
 
 import com.dat.ecommerce.dto.request.CreateProductRequest;
+import com.dat.ecommerce.dto.request.ProductFilterRequest;
 import com.dat.ecommerce.dto.request.UpdateProductRequest;
 import com.dat.ecommerce.dto.response.ProductResponse;
 import com.dat.ecommerce.enums.ProductStatus;
@@ -15,8 +16,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -47,7 +47,7 @@ public class ProductController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Page<ProductResponse>> getProducts(
 
-            @AuthenticationPrincipal UserDetails userDetails,
+            Authentication authentication,
 
             @RequestParam(required = false)
             String name,
@@ -75,16 +75,19 @@ public class ProductController {
             )
             Pageable pageable
     ) {
+        ProductFilterRequest filter = new ProductFilterRequest();
+
+        filter.setName(name);
+        filter.setSku(sku);
+        filter.setStatus(status);
+        filter.setMaxPrice(maxPrice);
+        filter.setMinPrice(minPrice);
+        filter.setMinStock(minStock);
 
         return ResponseEntity.ok(
                 productService.getProducts(
-                        userDetails.getUsername(),
-                        name,
-                        sku,
-                        status,
-                        minPrice,
-                        maxPrice,
-                        minStock,
+                        authentication.getName(),
+                        filter,
                         pageable
                 )
         );

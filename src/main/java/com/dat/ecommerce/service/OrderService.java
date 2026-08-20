@@ -1,11 +1,17 @@
 package com.dat.ecommerce.service;
 
+import com.dat.ecommerce.dto.request.OrderFilterRequest;
 import com.dat.ecommerce.dto.response.OrderItemResponse;
 import com.dat.ecommerce.dto.response.OrderResponse;
 import com.dat.ecommerce.entity.*;
 import com.dat.ecommerce.enums.OrderStatus;
+import com.dat.ecommerce.enums.Role;
 import com.dat.ecommerce.exception.*;
 import com.dat.ecommerce.repository.*;
+import com.dat.ecommerce.specification.OrderSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -116,6 +122,13 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
+    public List<OrderResponse> getAllOrders() {
+        return orderRepository.findAll().stream()
+                .map(this::toOrderResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public OrderResponse getOrderById( String email, Long orderId ) {
         User user = getUserByEmail(email);
         Order order = orderRepository.findByIdAndUserId(
@@ -137,11 +150,112 @@ public class OrderService {
                 );
     }
 
+    public Page<OrderResponse> getOrders(
+            String email,
+            OrderFilterRequest filter,
+            Pageable pageable
+    ) {
+        User user = userRepository
+                .findByEmail(email)
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                "User not found"
+                        )
+                );
+
+        Specification<Order> specification =
+                (root, query, cb) -> null;
+
+        if (user.getRole() == Role.USER) {
+            specification = specification.and(
+                    OrderSpecification.hasUserId(
+                            user.getId()
+                    )
+            );
+
+        } else if (user.getRole() == Role.ADMIN) {
+            if (filter.getUserId() != null) {
+                specification = specification.and(
+                        OrderSpecification.hasUserId(
+                                filter.getUserId()
+                        )
+                );
+            }
+        }
+
+        if (filter.getStatus() != null) {
+
+            specification = specification.and(
+                    OrderSpecification.hasStatus(
+                            filter.getStatus()
+                    )
+            );
+        }
+
+        if (filter.getMinTotalAmount() != null) {
+
+            specification = specification.and(
+                    OrderSpecification
+                            .totalAmountGreaterThanOrEqual(
+                                    filter.getMinTotalAmount()
+                            )
+            );
+        }
+
+        if (filter.getMaxTotalAmount() != null) {
+
+            specification = specification.and(
+                    OrderSpecification
+                            .totalAmountLessThanOrEqual(
+                                    filter.getMaxTotalAmount()
+                            )
+            );
+        }
+
+        if (filter.getCreatedFrom() != null) {
+
+            specification = specification.and(
+                    OrderSpecification
+                            .createdAtGreaterThanOrEqual(
+                                    filter.getCreatedFrom()
+                            )
+            );
+        }
+
+        if (filter.getCreatedTo() != null) {
+
+            specification = specification.and(
+                    OrderSpecification
+                            .createdAtLessThanOrEqual(
+                                    filter.getCreatedTo()
+                            )
+            );
+        }
+
+        if (filter.getProductSku() != null && filter.getProductSku().isBlank()) {
+            specification = specification.and(
+                    OrderSpecification.hasProductSku(
+                            filter.getProductSku()
+                    )
+            );
+        }
+
+        Page<Order> orders =
+                orderRepository.findAll(
+                        specification,
+                        pageable
+                );
+
+        return orders.map(this::toOrderResponse);
+    }
+
     private OrderResponse toOrderResponse(Order order) {
         List<OrderItemResponse> items =
-                orderItemRepository.findByOrder(order)
-                .stream()
-                        .map(OrderItemResponse::new).toList();
+                orderItemRepository
+                        .findByOrder(order)
+                        .stream()
+                        .map(OrderItemResponse::new)
+                        .toList();
 
         return new OrderResponse(
                 order,

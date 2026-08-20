@@ -1,6 +1,7 @@
 package com.dat.ecommerce.service;
 
 import com.dat.ecommerce.dto.request.CreateProductRequest;
+import com.dat.ecommerce.dto.request.ProductFilterRequest;
 import com.dat.ecommerce.dto.request.UpdateProductRequest;
 import com.dat.ecommerce.dto.response.ProductResponse;
 import com.dat.ecommerce.entity.Product;
@@ -13,7 +14,6 @@ import com.dat.ecommerce.exception.UserNotFoundException;
 import com.dat.ecommerce.repository.ProductRepository;
 import com.dat.ecommerce.repository.UserRepository;
 import com.dat.ecommerce.specification.ProductSpecification;
-import org.springframework.data.jpa.domain.PredicateSpecification;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -79,12 +79,7 @@ public class ProductService {
     @Transactional(readOnly = true)
     public Page<ProductResponse> getProducts(
             String email,
-            String name,
-            String sku,
-            ProductStatus status,
-            BigDecimal minPrice,
-            BigDecimal maxPrice,
-            Integer minStock,
+            ProductFilterRequest filter,
             Pageable pageable
     ) {
         User user = userRepository
@@ -107,57 +102,57 @@ public class ProductService {
 
         } else {
 
-            if (status != null) {
+            if (filter.getStatus() != null) {
                 specification =
                         specification.and(
                                 ProductSpecification.hasStatus(
-                                        status)
+                                        filter.getStatus())
                         );
             }
         }
 
-        if (name != null && !name.isBlank()) {
+        if (filter.getName() != null && !filter.getName().isBlank()) {
             specification =
                     specification.and(
                             ProductSpecification.nameContains(
-                                    name)
+                                    filter.getName())
                     );
         }
 
-        if (sku != null && !sku.isBlank()) {
+        if (filter.getSku() != null && !filter.getSku().isBlank()) {
 
             specification =
                     specification.and(
                             ProductSpecification.skuContains(
-                                    sku)
+                                    filter.getSku())
                     );
         }
 
-        if (minPrice != null) {
+        if (filter.getMinPrice() != null) {
 
             specification =
                     specification.and(
                             ProductSpecification
                                     .priceGreaterThanOrEqual(
-                                            minPrice)
+                                            filter.getMinPrice())
                     );
         }
 
-        if (maxPrice != null) {
+        if (filter.getMaxPrice() != null) {
             specification =
                     specification.and(
                             ProductSpecification
                                     .priceLessThanOrEqual(
-                                            maxPrice)
+                                            filter.getMaxPrice())
                     );
         }
 
-        if (minStock != null) {
+        if (filter.getMinStock() != null) {
             specification =
                     specification.and(
                             ProductSpecification
                                     .stockGreaterThanOrEqual(
-                                            minStock)
+                                            filter.getMinStock())
                     );
         }
 

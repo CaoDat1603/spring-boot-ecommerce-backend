@@ -1,6 +1,7 @@
 package com.dat.ecommerce.service;
 
 import com.dat.ecommerce.dto.request.AddCartItemRequest;
+import com.dat.ecommerce.dto.request.CartItemFilterRequest;
 import com.dat.ecommerce.dto.request.UpdateCartItemRequest;
 import com.dat.ecommerce.dto.response.CartItemResponse;
 import com.dat.ecommerce.dto.response.CartResponse;
@@ -16,6 +17,10 @@ import com.dat.ecommerce.repository.CartItemRepository;
 import com.dat.ecommerce.repository.CartRepository;
 import com.dat.ecommerce.repository.ProductRepository;
 import com.dat.ecommerce.repository.UserRepository;
+import com.dat.ecommerce.specification.CartItemSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,6 +63,111 @@ public class CartService {
         return new CartResponse(cart, items);
     }
 
+    @Transactional(readOnly = true)
+    public Page<CartItemResponse> getCartItems(
+            String email,
+            CartItemFilterRequest filter,
+            Pageable pageable
+    ) {
+        User user = getUserByEmail(email);
+
+        Cart cart = cartRepository.findByUserId(user.getId())
+                .orElseGet(() -> createCart(user));
+
+        Specification<CartItem> specification =
+                (root, query, criteriaBuilder) -> null;
+
+        if (cart.getId() == null) {
+            return Page.empty();
+        } else {
+            specification = specification.and(
+                    CartItemSpecification.hasCartId(
+                            cart.getId()
+                    )
+            );
+        }
+
+        if (filter.getProductId() != null) {
+            specification = specification.and(
+                    CartItemSpecification.hasProductId(
+                            filter.getProductId()
+                    )
+            );
+        }
+
+        if (filter.getNamePorduct() != null) {
+            specification = specification.and(
+                    CartItemSpecification.hasProductName(
+                            filter.getNamePorduct()
+                    )
+            );
+        }
+
+        if (filter.getSku() != null) {
+            specification = specification.and(
+                    CartItemSpecification.hasProductSku(
+                            filter.getSku()
+                    )
+            );
+        }
+
+        if (filter.getPriceMin() != null) {
+            specification = specification.and(
+                    CartItemSpecification.priceGreaterThanOrEqual(
+                            filter.getPriceMin()
+                    )
+            );
+        }
+
+        if (filter.getPriceMax() != null) {
+            specification = specification.and(
+                    CartItemSpecification.priceLessThanOrEqual(
+                            filter.getPriceMax()
+                    )
+            );
+        }
+
+        if (filter.getQuantityMin() != null) {
+            specification = specification.and(
+                    CartItemSpecification.quantityGreaterThanOrEqual(
+                            filter.getQuantityMin()
+                    )
+            );
+        }
+
+        if (filter.getQuantityMax() != null) {
+            specification = specification.and(
+                    CartItemSpecification.quantityLessThanOrEqual(
+                            filter.getQuantityMax()
+                    )
+            );
+        }
+
+        if (filter.getCreatedFrom() != null) {
+            specification = specification.and(
+                    CartItemSpecification.createdAtGreaterThanOrEqual(
+                            filter.getCreatedFrom()
+                    )
+            );
+        }
+
+        if (filter.getCreatedTo() != null) {
+            specification = specification.and(
+                    CartItemSpecification.createdAtLessThanOrEqual(
+                            filter.getCreatedTo()
+                    )
+            );
+        }
+
+        Page<CartItem> cartItems =
+                cartItemRepository.findAll(
+                        specification,
+                        pageable
+                );
+
+        return cartItems.map(CartItemResponse::new);
+    }
+
     @Transactional
     public CartResponse addItem(
             String email,
@@ -94,9 +204,7 @@ public class CartService {
 
         if (cartItem != null) {
 
-            int newQuantity =
-                    cartItem.getQuantity()
-                            + request.getQuantity();
+            int newQuantity = cartItem.getQuantity() + request.getQuantity();
 
             if (newQuantity > product.getStock()) {
                 throw new IllegalArgumentException(
@@ -191,8 +299,7 @@ public class CartService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() ->
                         new ProductNotFoundException(
-                                "Product not found with id: "
-                                        + productId
+                                "Product not found with id: " + productId
                         )
                 );
 
@@ -231,8 +338,7 @@ public class CartService {
         return userRepository.findByEmail(email)
                 .orElseThrow(() ->
                         new UserNotFoundException(
-                                "User not found with email: "
-                                        + email
+                                "User not found with email: " + email
                         )
                 );
     }

@@ -55,12 +55,9 @@ public class JwtAuthenticationFilter
             return;
         }
 
-        String username =
-                jwtService.extractUsername(token);
+        String username = jwtService.extractUsername(token);
 
-        UserDetails userDetails =
-                userDetailsService
-                        .loadUserByUsername(username);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(

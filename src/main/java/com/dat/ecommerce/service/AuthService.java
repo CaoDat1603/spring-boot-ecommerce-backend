@@ -75,11 +75,9 @@ public class AuthService {
             );
         }
 
-        String accessToken =
-                jwtService.generateAccessToken(user);
+        String accessToken = jwtService.generateAccessToken(user);
 
-        RefreshToken refreshToken =
-                refreshTokenService.createRefreshToken(user);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
         return new AuthResponse(
                 accessToken,
@@ -93,27 +91,17 @@ public class AuthService {
             String refreshTokenValue
     ) {
 
-        RefreshToken oldRefreshToken =
-                refreshTokenService.findByToken(
-                        refreshTokenValue
-                );
+        RefreshToken oldRefreshToken = refreshTokenService.findByToken(refreshTokenValue);
 
-        refreshTokenService.verifyExpiration(
-                oldRefreshToken
-        );
+        refreshTokenService.verifyExpiration(oldRefreshToken);
 
         User user = oldRefreshToken.getUser();
 
-        refreshTokenService.revokeToken(
-                oldRefreshToken
-        );
+        refreshTokenService.revokeToken(oldRefreshToken);
 
         String newAccessToken = jwtService.generateAccessToken(user);
 
-        RefreshToken newRefreshToken =
-                refreshTokenService.createRefreshToken(
-                        user
-                );
+        RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user);
 
         return new AuthResponse(
                 newAccessToken,
@@ -125,13 +113,8 @@ public class AuthService {
     @Transactional
     public void logout(String refreshTokenValue) {
 
-        RefreshToken refreshToken =
-                refreshTokenService.findByToken(
-                        refreshTokenValue
-                );
+        RefreshToken refreshToken = refreshTokenService.findByToken(refreshTokenValue);
 
-        refreshTokenService.revokeToken(
-                refreshToken
-        );
+        refreshTokenService.revokeToken(refreshToken);
     }
 }

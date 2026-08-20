@@ -120,6 +120,8 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
+
+
     @ExceptionHandler(PaymentAlreadyExistsException.class)
     public ResponseEntity<ApiErrorResponse> handlePaymentAlreadyExistsException(
             PaymentAlreadyExistsException ex,
@@ -163,6 +165,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(response);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidCredentials(
+            InvalidCredentialsException ex,
+            HttpServletRequest request
+    ) {
+
+        ApiErrorResponse error = createErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(error);
     }
 
     @ExceptionHandler(OrderNotFoundException.class)

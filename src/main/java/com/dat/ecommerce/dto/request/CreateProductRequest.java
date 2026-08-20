@@ -1,6 +1,5 @@
 package com.dat.ecommerce.dto.request;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;

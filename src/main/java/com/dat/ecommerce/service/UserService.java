@@ -2,17 +2,21 @@ package com.dat.ecommerce.service;
 
 import com.dat.ecommerce.dto.request.RegisterRequest;
 import com.dat.ecommerce.dto.request.UpdateUserRequest;
+import com.dat.ecommerce.dto.request.UserFilterRequest;
 import com.dat.ecommerce.dto.response.UserResponse;
 import com.dat.ecommerce.entity.User;
 import com.dat.ecommerce.enums.Role;
 import com.dat.ecommerce.exception.EmailAlreadyExistsException;
 import com.dat.ecommerce.exception.UserNotFoundException;
 import com.dat.ecommerce.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import com.dat.ecommerce.specification.UserSpecification;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -44,6 +48,84 @@ public class UserService {
         return new UserResponse(savedUser);
     }
 
+    @Transactional(readOnly = true)
+    public Page<UserResponse> getUsers(
+            String email,
+            UserFilterRequest filter,
+            Pageable pageable
+
+    ) {
+        User user = repository
+                .findByEmail(email)
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                "User not found"
+                        )
+                );
+
+        Specification<User> specification =
+                (root, query, cb) -> null;
+
+        if (user.getRole() == Role.USER) {
+            return Page.empty();
+        }
+
+        if (filter.getId() != null) {
+            specification = specification.and(
+                    UserSpecification.hasUserID(
+                            filter.getId()
+                    )
+            );
+        }
+
+        if (filter.getName() != null) {
+            specification = specification.and(
+                    UserSpecification.hasName(
+                            filter.getName()
+                    )
+            );
+        }
+
+        if (filter.getEmail() != null) {
+            specification = specification.and(
+                    UserSpecification.hasEmail(
+                            filter.getEmail()
+                    )
+            );
+        }
+
+        if (filter.getRole() != null) {
+            specification = specification.and(
+                    UserSpecification.hasRole(
+                            filter.getRole()
+                    )
+            );
+        }
+
+        if (filter.getCreatedFrom() != null) {
+            specification = specification.and(
+                    UserSpecification.createdAtGreaterThanOrEqual(
+                            filter.getCreatedFrom()
+                    )
+            );
+        }
+
+        if (filter.getCreatedTo() != null) {
+            specification = specification.and(
+                    UserSpecification.createdAtLessThanOrEqual(
+                            filter.getCreatedTo()
+                    )
+            );
+        }
+
+        Page<User> users =
+                repository.findAll(
+                        specification,
+                        pageable
+                );
+
+        return users.map(UserResponse::new);
+    }
 
     public List<UserResponse> getAllUsers() {
         return repository.findAll()

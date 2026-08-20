@@ -145,7 +145,7 @@ public class StripePaymentService {
     ) {
 
         return amount
-                .movePointRight(2)
+                .movePointRight(0)
                 .longValueExact();
     }
 }
