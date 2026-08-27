@@ -1,9 +1,15 @@
 package com.dat.ecommerce.dto.request;
 
 import jakarta.validation.constraints.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
+@Getter
+@Setter
+@NoArgsConstructor
 public class UpdateProductRequest {
     @Size(max = 255, message = "name cannot exceed 100 characters")
     private String name;
@@ -18,60 +24,4 @@ public class UpdateProductRequest {
     private Integer stock;
 
     private String sku;
-
-    UpdateProductRequest() {}
-
-    UpdateProductRequest(
-            String name,
-            String description,
-            BigDecimal price,
-            Integer stock,
-            String sku
-    ) {
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.stock = stock;
-        this.sku = sku;
-    }
-
-    public String getSku() {
-        return sku;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Integer getStock() {
-        return stock;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setStock(Integer stock) {
-        this.stock = stock;
-    }
-
-    public void setSku(String sku) {
-        this.sku = sku;
-    }
 }

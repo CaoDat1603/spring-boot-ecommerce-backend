@@ -1,9 +1,15 @@
 package com.dat.ecommerce.dto.request;
 
 import jakarta.validation.constraints.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
+@Getter
+@Setter
+@NoArgsConstructor
 public class CreateProductRequest {
     @NotBlank(message = "name cannot be blank")
     @Size(max = 255, message = "name cannot exceed 100 characters")
@@ -22,40 +28,4 @@ public class CreateProductRequest {
 
     @NotBlank(message = "sku is required")
     private String sku;
-
-    CreateProductRequest() {}
-
-    CreateProductRequest(
-            String name,
-            String description,
-            BigDecimal price,
-            Integer stock,
-            String sku
-    ) {
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.stock = stock;
-        this.sku = sku;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public Integer getStock() {
-        return stock;
-    }
-
-    public String getSku() {
-        return sku;
-    }
 }

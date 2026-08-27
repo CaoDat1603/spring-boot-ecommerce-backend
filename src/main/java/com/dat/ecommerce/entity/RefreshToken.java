@@ -1,9 +1,15 @@
 package com.dat.ecommerce.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "refresh_tokens")
 public class RefreshToken {
@@ -28,9 +34,6 @@ public class RefreshToken {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    public RefreshToken() {
-    }
-
     public RefreshToken(
             User user,
             String token,
@@ -41,53 +44,5 @@ public class RefreshToken {
         this.expiresAt = expiresAt;
         this.revoked = false;
         this.createdAt = LocalDateTime.now();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public boolean getRevoked() {
-        return revoked;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getExpiresAt() {
-        return expiresAt;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public void setRevoked(boolean revoked) {
-        this.revoked = revoked;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public void setExpiresAt(LocalDateTime expiresAt) {
-        this.expiresAt = expiresAt;
     }
 }

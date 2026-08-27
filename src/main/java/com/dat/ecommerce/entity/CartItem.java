@@ -1,10 +1,16 @@
 package com.dat.ecommerce.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(
         name = "cart_items",
@@ -40,7 +46,6 @@ public class CartItem {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public CartItem() {}
 
     public CartItem(
             Cart cart,
@@ -64,61 +69,5 @@ public class CartItem {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public Cart getCart() {
-        return cart;
-    }
-
-    public Product getProduct() {
-        return product;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public Integer getQuantity() {
-        return quantity;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setCart(Cart cart) {
-        this.cart = cart;
-    }
-
-    public void setProduct(Product product) {
-        this.product = product;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
     }
 }

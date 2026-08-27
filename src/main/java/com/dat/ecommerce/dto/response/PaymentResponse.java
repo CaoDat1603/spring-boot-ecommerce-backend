@@ -4,10 +4,16 @@ import com.dat.ecommerce.entity.Payment;
 import com.dat.ecommerce.enums.PaymentMethod;
 import com.dat.ecommerce.enums.PaymentProvider;
 import com.dat.ecommerce.enums.PaymentStatus;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class PaymentResponse {
 
     private Long id;
@@ -21,9 +27,6 @@ public class PaymentResponse {
     private LocalDateTime paidAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    public PaymentResponse() {
-    }
 
     public PaymentResponse(Payment payment) {
         this.id = payment.getId();
@@ -44,49 +47,5 @@ public class PaymentResponse {
     ) {
         this(payment);
         this.checkoutUrl = checkoutUrl;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public PaymentMethod getMethod() {
-        return method;
-    }
-
-    public String getProviderPaymentId() {
-        return providerPaymentId;
-    }
-
-    public PaymentProvider getProvider() {
-        return provider;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public LocalDateTime getPaidAt() {
-        return paidAt;
-    }
-
-    public String getCheckoutUrl() {
-        return checkoutUrl;
-    }
-
-    public Long getOrderId() {
-        return orderId;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public PaymentStatus getStatus() {
-        return status;
     }
 }

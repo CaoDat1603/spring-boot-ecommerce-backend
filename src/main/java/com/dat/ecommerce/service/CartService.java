@@ -95,10 +95,10 @@ public class CartService {
             );
         }
 
-        if (filter.getNamePorduct() != null) {
+        if (filter.getNameProduct() != null) {
             specification = specification.and(
                     CartItemSpecification.hasProductName(
-                            filter.getNamePorduct()
+                            filter.getNameProduct()
                     )
             );
         }

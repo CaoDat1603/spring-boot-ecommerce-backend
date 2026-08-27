@@ -1,10 +1,16 @@
 package com.dat.ecommerce.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "order_items")
 public class OrderItem {
@@ -38,7 +44,6 @@ public class OrderItem {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public OrderItem() {}
 
     public OrderItem(
             Order order,
@@ -65,77 +70,5 @@ public class OrderItem {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public Order getOrder() {
-        return order;
-    }
-
-    public Product getProduct() {
-        return product;
-    }
-
-    public String getProductName() {
-        return productName;
-    }
-
-    public BigDecimal getProductPrice() {
-        return priceProduct;
-    }
-
-    public Integer getQuantity() {
-        return quantity;
-    }
-
-    public BigDecimal getSubtotal() {
-        return subtotal;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setProduct(Product product) {
-        this.product = product;
-    }
-
-    public void setOrder(Order order) {
-        this.order = order;
-    }
-
-    public void setProductName(String productName) {
-        this.productName = productName;
-    }
-
-    public void setProductPrice(BigDecimal priceProduct) {
-        this.priceProduct = priceProduct;
-    }
-
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
-    }
-
-    public void setSubtotal(BigDecimal subtotal) {
-        this.subtotal = subtotal;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
     }
 }

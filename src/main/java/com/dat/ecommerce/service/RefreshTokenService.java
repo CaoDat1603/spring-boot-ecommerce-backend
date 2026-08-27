@@ -67,7 +67,7 @@ public class RefreshTokenService {
             RefreshToken refreshToken
     ) {
 
-        if (refreshToken.getRevoked()) {
+        if (refreshToken.isRevoked()) {
 
             throw new IllegalStateException(
                     "Refresh token has been revoked"

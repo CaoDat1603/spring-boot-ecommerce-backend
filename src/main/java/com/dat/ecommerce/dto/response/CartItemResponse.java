@@ -1,11 +1,15 @@
 package com.dat.ecommerce.dto.response;
 
 import com.dat.ecommerce.entity.CartItem;
-import jakarta.persistence.criteria.CriteriaBuilder;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class CartItemResponse {
 
     private Long id;
@@ -15,8 +19,6 @@ public class CartItemResponse {
     private Integer quantity;
     private BigDecimal subtotal;
 
-    public CartItemResponse() {
-    }
 
     public CartItemResponse(CartItem cartItem) {
         this.id = cartItem.getId();
@@ -28,29 +30,5 @@ public class CartItemResponse {
         this.subtotal = this.price.multiply(
                 BigDecimal.valueOf(this.quantity)
         );
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public Long getProductId() {
-        return productId;
-    }
-
-    public String getProductName() {
-        return productName;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public Integer getQuantity() {
-        return quantity;
-    }
-
-    public BigDecimal getSubtotal() {
-        return subtotal;
     }
 }

@@ -5,10 +5,16 @@ import com.dat.ecommerce.enums.PaymentMethod;
 import com.dat.ecommerce.enums.PaymentProvider;
 import com.dat.ecommerce.enums.PaymentStatus;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "payments")
 public class Payment {
@@ -50,7 +56,6 @@ public class Payment {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public Payment() {}
 
     public Payment(
             Order order,
@@ -88,93 +93,5 @@ public class Payment {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public Order getOrder() {
-        return order;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public PaymentStatus getStatus() {
-        return status;
-    }
-
-    public PaymentMethod getMethod() {
-        return method;
-    }
-
-    public LocalDateTime getPaidAt() {
-        return paidAt;
-    }
-
-    public PaymentProvider getProvider() {
-        return provider;
-    }
-
-    public String getProviderPaymentId() {
-        return providerPaymentId;
-    }
-
-    public String getProviderSessionId() {
-        return providerSessionId;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setOrder(Order order) {
-        this.order = order;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-
-    public void setStatus(PaymentStatus status) {
-        this.status = status;
-    }
-
-    public void setMethod(PaymentMethod method) {
-        this.method = method;
-    }
-
-    public void setPaidAt(LocalDateTime paidAt) {
-        this.paidAt = paidAt;
-    }
-
-    public void setProvider(PaymentProvider provider) {
-        this.provider = provider;
-    }
-
-    public void setProviderPaymentId(String providerPaymentId) {
-        this.providerPaymentId = providerPaymentId;
-    }
-
-    public void setProviderSessionId(String providerSessionId) {
-        this.providerSessionId = providerSessionId;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
     }
 }

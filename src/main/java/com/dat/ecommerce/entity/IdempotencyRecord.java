@@ -2,10 +2,16 @@ package com.dat.ecommerce.entity;
 
 import com.dat.ecommerce.enums.IdempotencyStatus;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.print.attribute.standard.MediaSize;
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(
         name = "idempotency_records",
@@ -69,9 +75,6 @@ public class IdempotencyRecord {
     @Column(nullable = false)
     private IdempotencyStatus status;
 
-    public IdempotencyRecord() {
-    }
-
     public IdempotencyRecord(
             String idempotencyKey,
             User user,
@@ -82,69 +85,5 @@ public class IdempotencyRecord {
         this.endpoint = endpoint;
         this.status = IdempotencyStatus.PROCESSING;
         this.createdAt = LocalDateTime.now();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public IdempotencyStatus getStatus() {
-        return status;
-    }
-
-    public String getIdempotencyKey() {
-        return idempotencyKey;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public String getEndpoint() {
-        return endpoint;
-    }
-
-    public Integer getResponseStatus() {
-        return responseStatus;
-    }
-
-    public String getResponseBody() {
-        return responseBody;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setResponseStatus(Integer responseStatus) {
-        this.responseStatus = responseStatus;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setStatus(IdempotencyStatus status) {
-        this.status = status;
-    }
-
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
-    }
-
-    public void setIdempotencyKey(String idempotencyKey) {
-        this.idempotencyKey = idempotencyKey;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public void setResponseBody(String responseBody) {
-        this.responseBody = responseBody;
     }
 }

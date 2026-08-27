@@ -2,11 +2,17 @@ package com.dat.ecommerce.dto.response;
 
 import com.dat.ecommerce.entity.Order;
 import com.dat.ecommerce.enums.OrderStatus;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class OrderResponse {
     private Long id;
     private Long userId;
@@ -16,7 +22,6 @@ public class OrderResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public OrderResponse() { }
 
     public OrderResponse(Order order, List<OrderItemResponse> items
     ) {
@@ -28,18 +33,4 @@ public class OrderResponse {
         this.createdAt = order.getCreatedAt();
         this.updatedAt = order.getUpdatedAt();
     }
-
-    public Long getId() { return id; }
-
-    public Long getUserId() { return userId; }
-
-    public BigDecimal getTotalAmount() { return totalAmount; }
-
-    public OrderStatus getStatus() { return status; }
-
-    public List<OrderItemResponse> getItems() { return items; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
 }

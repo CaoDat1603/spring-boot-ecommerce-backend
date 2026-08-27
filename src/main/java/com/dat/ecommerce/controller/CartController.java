@@ -89,7 +89,7 @@ public class CartController {
         CartItemFilterRequest filter = new CartItemFilterRequest();
 
         filter.setProductId(productId);
-        filter.setNamePorduct(productName);
+        filter.setNameProduct(productName);
         filter.setSku(productSku);
         filter.setPriceMax(priceMax);
         filter.setPriceMin(priceMin);

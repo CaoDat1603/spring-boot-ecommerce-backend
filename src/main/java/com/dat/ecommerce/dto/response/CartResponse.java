@@ -1,11 +1,16 @@
 package com.dat.ecommerce.dto.response;
 
 import com.dat.ecommerce.entity.Cart;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class CartResponse {
 
     private Long id;
@@ -13,8 +18,6 @@ public class CartResponse {
     private List<CartItemResponse> items;
     private BigDecimal totalAmount;
 
-    public CartResponse() {
-    }
 
     public CartResponse(
             Cart cart,
@@ -32,19 +35,4 @@ public class CartResponse {
                 );
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public List<CartItemResponse> getItems() {
-        return items;
-    }
-
-    public BigDecimal getTotalAmount() {
-        return totalAmount;
-    }
 }
