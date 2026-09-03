@@ -1,15 +1,15 @@
 # E-commerce Backend
 
-![Java](https://shields.io)
-![Spring Boot](https://shields.io)
-![PostgreSQL](https://shields.io)
-![Redis](https://shields.io)
-![Stripe](https://shields.io)
-![JWT](https://shields.io)
-![Docker](https://shields.io)
-![Maven](https://shields.io)
-![Flyway](https://shields.io)
-![Hibernate](https://shields.io)
+![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?logo=springboot&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1?logo=postgresql&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-Cache-DC382D?logo=redis&logoColor=white)
+![Stripe](https://img.shields.io/badge/Stripe-Payment-635BFF?logo=stripe&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-Auth-000000?logo=jsonwebtokens&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Container-2496ED?logo=docker&logoColor=white)
+![Maven](https://img.shields.io/badge/Maven-Build-C71A36?logo=apachemaven&logoColor=white)
+![Flyway](https://img.shields.io/badge/Flyway-Migration-CC0200?logo=flyway&logoColor=white)
+![Hibernate](https://img.shields.io/badge/Hibernate-ORM-59666C?logo=hibernate&logoColor=white)
 
 A RESTful e-commerce backend built with Spring Boot, focused on clean business flows, security, payment reliability, and database consistency.
 
