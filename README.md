@@ -1,20 +1,32 @@
 # E-commerce Backend
 
+![Java](https://shields.io)
+![Spring Boot](https://shields.io)
+![PostgreSQL](https://shields.io)
+![Redis](https://shields.io)
+![Stripe](https://shields.io)
+![JWT](https://shields.io)
+![Docker](https://shields.io)
+![Maven](https://shields.io)
+![Flyway](https://shields.io)
+![Hibernate](https://shields.io)
+
 A RESTful e-commerce backend built with Spring Boot, focused on clean business flows, security, payment reliability, and database consistency.
 
 ## Tech Stack
 
-- Java 26
-- Spring Boot 4.1
-- Spring Data JPA / Hibernate
-- PostgreSQL
-- Redis
-- Flyway
-- Spring Security
-- JWT
-- Stripe
-- Maven
-- Docker / Docker Compose
+| Technology | Purpose |
+| :--- | :--- |
+| **Java 26** | Core Programming Language |
+| **Spring Boot 4.1** | Application Framework |
+| **Spring Data JPA / Hibernate** | ORM & Database Communication |
+| **PostgreSQL** | Primary Relational Database |
+| **Redis** | In-Memory Data Store & Caching |
+| **Flyway** | Database Schema Migration |
+| **Spring Security / JWT** | Authentication & Role-based Authorization |
+| **Stripe** | Payment Gateway & Webhook Integration |
+| **Maven** | Dependency Management & Build Tool |
+| **Docker / Docker Compose** | Containerization & Local Infrastructure |
 
 ## Current Features
 
